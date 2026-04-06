@@ -1,0 +1,14 @@
+# Python cache/artifacts
+__pycache__/
+*.py[cod]
+
+# Virtual environments
+.venv/
+venv/
+
+# Training outputs
+outputs/
+
+# Local data caches
+data/cifar-10-batches-py/
+data/cifar-100-python/
