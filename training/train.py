@@ -154,7 +154,9 @@ def main() -> None:
 		weight_decay=args.weight_decay,
 		nesterov=True,
 	)
-	scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.epochs)
+	# MixUp paper uses step decay: dividing LR by 10 at 50% and 75% of training
+	milestones = [int(args.epochs * 0.5), int(args.epochs * 0.75)]
+	scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=milestones, gamma=0.1)
 
 	run_dir = Path(args.save_dir) / args.run_name
 	run_dir.mkdir(parents=True, exist_ok=True)
