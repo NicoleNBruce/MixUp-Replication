@@ -97,16 +97,21 @@ python training/train.py --dataset cifar10 --epochs 200 --seed 42 --run-name bas
 
 Compare `summary.json` and `history.json` between runs.
 
-## One-Command Run for Baseline + MixUp
+## One-Command Run for Baseline + MixUp Ablations
 
 ```bash
-python experiments/run_experiments.py --epochs 200 --seed 42
+python experiments/run_experiments.py --epochs 200 --seed 42 --dataset cifar10
 ```
 
 This executes:
+1. Baseline training (`run-name=cifar10_baseline`)
+2. MixUp training with α=0.2, 0.4, 1.0 (`run-name=cifar10_mixup_alpha_...`)
+3. Prints a comparison table and plots `ablation_curves.png`.
 
-1. Baseline training (`run-name=baseline`)
-2. MixUp training (`run-name=mixup_alpha_1.0`)
+To run on **CIFAR-100**, just swap the dataset flag:
+```bash
+python experiments/run_experiments.py --epochs 200 --seed 42 --dataset cifar100
+```
 
 ## Evaluation and Curves
 
@@ -118,6 +123,17 @@ python evaluation/eval.py --checkpoint outputs/mixup_alpha_1.0/best.pt
 ```
 
 By default, the script looks for `history.json` next to the checkpoint and writes `curves.png` in the same folder.
+
+## Evaluate on CIFAR-10-C (Domain Shift)
+
+You can test trained checkpoints against **CIFAR-10-C** (corrupted images by Hendrycks et al.) to see if MixUp genuinely helps with robustness against domain shifts in a way standard training doesn't. 
+
+This will automatically download and extract CIFAR-10-C (about 2.5 GB) into `--data-dir`, and output the average accuracy over all 15 corruption types:
+```bash
+python evaluation/eval_cifar_c.py \
+  --checkpoint outputs/mixup_alpha_1.0/best.pt \
+  --data-dir ./data
+```
 
 ## Suggested Commit Flow
 

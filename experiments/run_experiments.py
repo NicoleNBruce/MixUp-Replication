@@ -8,8 +8,9 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 
 def parse_args() -> argparse.Namespace:
-	parser = argparse.ArgumentParser(description="Run full CIFAR-10 experiments: baseline vs MixUp.")
-	parser.add_argument("--epochs", type=int, default=200)
+	parser = argparse.ArgumentParser(description="Run full experiments: baseline vs MixUp.")
+	parser.add_argument("--dataset", type=str, default="cifar10", choices=["cifar10", "cifar100"])
+	parser.add_argument("--epochs", type=int, default=100)
 	parser.add_argument("--seed", type=int, default=42)
 	parser.add_argument("--data-dir", type=str, default="./data")
 	parser.add_argument("--save-dir", type=str, default="./outputs")
@@ -89,12 +90,12 @@ def main() -> None:
 	ROOT = Path(__file__).resolve().parents[1]
 	train_script = ROOT / "training" / "train.py"
 	
-	# The paper ablations for CIFAR
+	# The paper ablations
 	experiments = [
-		{"name": "baseline", "alpha": 0.0},
-		{"name": "mixup_alpha_0.2", "alpha": 0.2},
-		{"name": "mixup_alpha_0.4", "alpha": 0.4},
-		{"name": "mixup_alpha_1.0", "alpha": 1.0},
+		{"name": f"{args.dataset}_baseline", "alpha": 0.0},
+		{"name": f"{args.dataset}_mixup_alpha_0.2", "alpha": 0.2},
+		{"name": f"{args.dataset}_mixup_alpha_0.4", "alpha": 0.4},
+		{"name": f"{args.dataset}_mixup_alpha_1.0", "alpha": 1.0},
 	]
 
 	history_paths = {}
@@ -107,7 +108,7 @@ def main() -> None:
 		cmd = [
 			sys.executable,
 			str(train_script),
-			"--dataset", "cifar10",
+			"--dataset", args.dataset,
 			"--epochs", str(args.epochs),
 			"--seed", str(args.seed),
 			"--data-dir", args.data_dir,
