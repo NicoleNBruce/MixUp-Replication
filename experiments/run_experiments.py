@@ -39,7 +39,7 @@ def plot_combined_curves(history_paths: dict[str, Path], save_path: Path):
 		if not epochs:
 			continue
 		
-		# Plot Test Loss
+		#plot test loss
 		axes[0].plot(epochs, test_loss, label=name)
 		# Plot Test Acc
 		axes[1].plot(epochs, test_acc, label=name)
@@ -64,23 +64,25 @@ def plot_combined_curves(history_paths: dict[str, Path], save_path: Path):
 
 
 def summarize_results(summary_paths: dict[str, Path]):
-	print("\n" + "="*40)
-	print(f"{'Experiment':<20} | {'Test Accuracy (%)':<15}")
-	print("="*40)
+	print("\n" + "="*65)
+	print(f"{'Experiment':<30} | {'Top-1 Error (%)':<15} | {'Top-5 Error (%)':<15}")
+	print("="*65)
 	
 	for name, path in summary_paths.items():
 		if not path.exists():
-			print(f"{name:<20} | {'N/A (Failed/Missing)':<15}")
+			print(f"{name:<30} | {'N/A (Missing)':<15} | {'N/A (Missing)':<15}")
 			continue
 		with path.open("r", encoding="utf-8") as fp:
 			summary = json.load(fp)
-		acc = summary.get("best_test_acc", "N/A")
-		if isinstance(acc, float):
-			print(f"{name:<20} | {acc:.2f}")
-		else:
-			print(f"{name:<20} | {acc}")
-	print("="*40 + "\n")
-
+			
+		acc1 = summary.get("best_test_acc", "N/A")
+		acc5 = summary.get("best_test_acc5", "N/A")
+		
+		err1_str = f"{100.0 - acc1:.2f}" if isinstance(acc1, float) else "N/A"
+		err5_str = f"{100.0 - acc5:.2f}" if isinstance(acc5, float) else "N/A"
+		
+		print(f"{name:<30} | {err1_str:<15} | {err5_str:<15}")
+	print("="*65 + "\n")
 
 def main() -> None:
 	args = parse_args()
@@ -90,11 +92,9 @@ def main() -> None:
 	ROOT = Path(__file__).resolve().parents[1]
 	train_script = ROOT / "training" / "train.py"
 	
-	# The paper ablations
+	# Keep only baseline and alpha=1.0 per user request
 	experiments = [
 		{"name": f"{args.dataset}_baseline", "alpha": 0.0},
-		{"name": f"{args.dataset}_mixup_alpha_0.2", "alpha": 0.2},
-		{"name": f"{args.dataset}_mixup_alpha_0.4", "alpha": 0.4},
 		{"name": f"{args.dataset}_mixup_alpha_1.0", "alpha": 1.0},
 	]
 
