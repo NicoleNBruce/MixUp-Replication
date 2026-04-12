@@ -44,9 +44,8 @@ def set_seed(seed: int) -> None:
 	np.random.seed(seed)
 	torch.manual_seed(seed)
 	torch.cuda.manual_seed_all(seed)
-	# Turn off strict determinism and enable benchmark for a massive speedup on CNNs
-	cudnn.deterministic = False
-	cudnn.benchmark = True
+	cudnn.deterministic = True
+	cudnn.benchmark = False
 
 
 def accuracy_from_logits(logits: torch.Tensor, targets: torch.Tensor) -> float:
