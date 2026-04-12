@@ -44,8 +44,9 @@ def set_seed(seed: int) -> None:
 	np.random.seed(seed)
 	torch.manual_seed(seed)
 	torch.cuda.manual_seed_all(seed)
-	cudnn.deterministic = True
-	cudnn.benchmark = False
+	# Turn off strict determinism and enable benchmark for a massive speedup on CNNs
+	cudnn.deterministic = False
+	cudnn.benchmark = True
 
 
 def accuracy_from_logits(logits: torch.Tensor, targets: torch.Tensor) -> float:
@@ -165,6 +166,10 @@ def main() -> None:
 	)
 
 	model = resnet18(num_classes=num_classes).to(device)
+	if torch.cuda.device_count() > 1:
+		print(f"Using {torch.cuda.device_count()} GPUs via DataParallel!")
+		model = nn.DataParallel(model)
+
 	criterion = nn.CrossEntropyLoss()
 	optimizer = torch.optim.SGD(
 		model.parameters(),
