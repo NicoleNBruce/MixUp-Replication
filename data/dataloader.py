@@ -27,6 +27,7 @@ def get_cifar_loaders(
 	batch_size: int = 128,
 	num_workers: int = 4,
 	seed: int = 42,
+	corrupt_prob: float = 0.0,
 ) -> Tuple[DataLoader, DataLoader, int]:
 	dataset = dataset.lower()
 	if dataset not in CIFAR_STATS:
@@ -54,6 +55,15 @@ def get_cifar_loaders(
 	train_set = dataset_cls(root=data_dir, train=True, transform=train_transform, download=True)
 	test_set = dataset_cls(root=data_dir, train=False, transform=test_transform, download=True)
 	num_classes = 10 if dataset == "cifar10" else 100
+
+	if corrupt_prob > 0.0:
+		print(f"Corrupting {corrupt_prob*100}% of training labels...")
+		random.seed(seed)
+		num_to_corrupt = int(corrupt_prob * len(train_set))
+		indices = list(range(len(train_set)))
+		random.shuffle(indices)
+		for i in range(num_to_corrupt):
+			train_set.targets[indices[i]] = random.randint(0, num_classes - 1)
 
 	generator = torch.Generator()
 	generator.manual_seed(seed)

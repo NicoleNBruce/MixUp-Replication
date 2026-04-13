@@ -118,12 +118,13 @@ class PreActBlock(nn.Module):
     """Pre-activation ResNet block — He et al. 2016b (arXiv:1603.05027)."""
     expansion = 1
 
-    def __init__(self, in_channels: int, out_channels: int, stride: int = 1) -> None:
+    def __init__(self, in_channels: int, out_channels: int, stride: int = 1, dropout_prob: float = 0.0) -> None:
         super().__init__()
         self.bn1   = nn.BatchNorm2d(in_channels)
         self.conv1 = nn.Conv2d(in_channels, out_channels, kernel_size=3,
                                stride=stride, padding=1, bias=False)
         self.bn2   = nn.BatchNorm2d(out_channels)
+        self.dropout = nn.Dropout(p=dropout_prob) if dropout_prob > 0 else nn.Identity()
         self.conv2 = nn.Conv2d(out_channels, out_channels, kernel_size=3,
                                stride=1, padding=1, bias=False)
 
@@ -137,10 +138,14 @@ class PreActBlock(nn.Module):
         out      = F.relu(self.bn1(x))
         shortcut = self.shortcut(out)
         out      = self.conv1(out)
-        out      = self.conv2(F.relu(self.bn2(out)))
+        out      = self.conv2(self.dropout(F.relu(self.bn2(out))))
         out     += shortcut
         return out
 
 
-def resnet18(num_classes: int = 10) -> ResNet:
-    return ResNet(PreActBlock, [2, 2, 2, 2], num_classes=num_classes)
+def resnet18(num_classes: int = 10, dropout_prob: float = 0.0) -> ResNet:
+    # Wrap PreActBlock with dropout wrapper
+    def block_with_dropout(*args, **kwargs):
+        return PreActBlock(*args, **kwargs, dropout_prob=dropout_prob)
+    
+    return ResNet(block_with_dropout, [2, 2, 2, 2], num_classes=num_classes)

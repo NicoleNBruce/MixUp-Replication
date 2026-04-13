@@ -34,6 +34,8 @@ def parse_args() -> argparse.Namespace:
 	parser.add_argument("--weight-decay", type=float, default=1e-4)
 	parser.add_argument("--seed", type=int, default=42)
 	parser.add_argument("--mixup-alpha", type=float, default=0.0)
+	parser.add_argument("--dropout", type=float, default=0.0)
+	parser.add_argument("--corrupt-prob", type=float, default=0.0)
 	parser.add_argument("--save-dir", type=str, default="./outputs")
 	parser.add_argument("--run-name", type=str, default="baseline")
 	return parser.parse_args()
@@ -162,9 +164,10 @@ def main() -> None:
 		batch_size=args.batch_size,
 		num_workers=args.num_workers,
 		seed=args.seed,
+		corrupt_prob=args.corrupt_prob,
 	)
 
-	model = resnet18(num_classes=num_classes).to(device)
+	model = resnet18(num_classes=num_classes, dropout_prob=args.dropout).to(device)
 	if torch.cuda.device_count() > 1:
 		print(f"Using {torch.cuda.device_count()} GPUs via DataParallel!")
 		model = nn.DataParallel(model)
