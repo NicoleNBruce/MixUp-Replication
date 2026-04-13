@@ -148,4 +148,6 @@ def resnet18(num_classes: int = 10, dropout_prob: float = 0.0) -> ResNet:
     def block_with_dropout(*args, **kwargs):
         return PreActBlock(*args, **kwargs, dropout_prob=dropout_prob)
     
+    block_with_dropout.expansion = PreActBlock.expansion
+    
     return ResNet(block_with_dropout, [2, 2, 2, 2], num_classes=num_classes)
