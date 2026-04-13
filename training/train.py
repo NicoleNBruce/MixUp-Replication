@@ -168,9 +168,6 @@ def main() -> None:
 	)
 
 	model = resnet18(num_classes=num_classes, dropout_prob=args.dropout).to(device)
-	if torch.cuda.device_count() > 1:
-		print(f"Using {torch.cuda.device_count()} GPUs via DataParallel!")
-		model = nn.DataParallel(model)
 
 	criterion = nn.CrossEntropyLoss()
 	optimizer = torch.optim.SGD(
