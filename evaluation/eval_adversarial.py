@@ -51,6 +51,12 @@ def main():
     criterion = nn.CrossEntropyLoss()
     correct, total = 0, 0
     
+    # Get exact bounds for the dataset to calculate valid normalized min/max per channel
+    db_mean = torch.tensor([0.4914, 0.4822, 0.4465] if args.dataset == "cifar10" else [0.5071, 0.4867, 0.4408], device=device).view(1, 3, 1, 1)
+    db_std = torch.tensor([0.2023, 0.1994, 0.2010] if args.dataset == "cifar10" else [0.2675, 0.2565, 0.2761], device=device).view(1, 3, 1, 1)
+    lower_bound = (0.0 - db_mean) / db_std
+    upper_bound = (1.0 - db_mean) / db_std
+    
     progress = tqdm(test_loader, desc=f"Evaluating {args.attack}")
     for images, labels in progress:
         images, labels = images.to(device), labels.to(device)
@@ -64,8 +70,8 @@ def main():
             
             # Create FGSM attack
             adv_images = images + args.epsilon * images.grad.data.sign()
-            # Simple clamping to valid image range [-3, 3] approximately for normalized CIFAR
-            adv_images = torch.clamp(adv_images, -3.0, 3.0)
+            # Strictly limit the generated perturbation back to real image space!
+            adv_images = torch.max(torch.min(adv_images, upper_bound), lower_bound)
             
         elif args.attack == "ifgsm":
             adv_images = images.clone().detach().requires_grad_(True)
@@ -77,7 +83,7 @@ def main():
                 
                 adv_images = adv_images + args.alpha * adv_images.grad.data.sign()
                 eta = torch.clamp(adv_images - images, min=-args.epsilon, max=args.epsilon)
-                adv_images = torch.clamp(images + eta, -3.0, 3.0).detach().requires_grad_(True)
+                adv_images = torch.max(torch.min(images + eta, upper_bound), lower_bound).detach().requires_grad_(True)
                 
         # Evaluate Attack on target model
         with torch.no_grad():
