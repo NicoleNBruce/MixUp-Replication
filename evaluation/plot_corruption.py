@@ -39,7 +39,8 @@ def main():
         if mixup_path.exists():
             with mixup_path.open("r") as f:
                 h = json.load(f)
-                axes[i].plot(h["epoch"], h["test_acc"], label="MixUp (alpha=8.0)", color='orange')
+                alpha_val = 8.0 if level == "20" else 32.0
+                axes[i].plot(h["epoch"], h["test_acc"], label=f"MixUp (alpha={alpha_val})", color='orange')
         else:
             print(f"Missing {mixup_path}")
                 
