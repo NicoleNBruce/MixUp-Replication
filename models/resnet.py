@@ -7,58 +7,10 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
-class BasicBlock(nn.Module):
-	expansion = 1
-
-	def __init__(self, in_channels: int, out_channels: int, stride: int = 1) -> None:
-		super().__init__()
-		self.conv1 = nn.Conv2d(
-			in_channels,
-			out_channels,
-			kernel_size=3,
-			stride=stride,
-			padding=1,
-			bias=False,
-		)
-		self.bn1 = nn.BatchNorm2d(out_channels)
-		self.relu = nn.ReLU(inplace=True)
-		self.conv2 = nn.Conv2d(
-			out_channels,
-			out_channels,
-			kernel_size=3,
-			stride=1,
-			padding=1,
-			bias=False,
-		)
-		self.bn2 = nn.BatchNorm2d(out_channels)
-
-		if stride != 1 or in_channels != out_channels:
-			self.shortcut = nn.Sequential(
-				nn.Conv2d(in_channels, out_channels, kernel_size=1, stride=stride, bias=False),
-				nn.BatchNorm2d(out_channels),
-			)
-		else:
-			self.shortcut = nn.Identity()
-
-	def forward(self, x: torch.Tensor) -> torch.Tensor:
-		identity = self.shortcut(x)
-
-		out = self.conv1(x)
-		out = self.bn1(out)
-		out = self.relu(out)
-
-		out = self.conv2(out)
-		out = self.bn2(out)
-
-		out += identity
-		out = self.relu(out)
-		return out
-
-
 class ResNet(nn.Module):
 	def __init__(
 		self,
-		block: Type[BasicBlock],
+		block: Type[PreActBlock],
 		layers: List[int],
 		num_classes: int,
 	) -> None:
@@ -80,7 +32,7 @@ class ResNet(nn.Module):
 
 		self._initialize_weights()
 
-	def _make_layer(self, block: Type[BasicBlock], out_channels: int, blocks: int, stride: int) -> nn.Sequential:
+	def _make_layer(self, block: Type[PreActBlock], out_channels: int, blocks: int, stride: int) -> nn.Sequential:
 		strides = [stride] + [1] * (blocks - 1)
 		layers = []
 		for s in strides:
@@ -144,7 +96,7 @@ class PreActBlock(nn.Module):
 
 
 def resnet18(num_classes: int = 10, dropout_prob: float = 0.0) -> ResNet:
-    # Wrap PreActBlock with dropout wrapper
+    #wrapping PreActBlock with dropout wrapper
     def block_with_dropout(*args, **kwargs):
         return PreActBlock(*args, **kwargs, dropout_prob=dropout_prob)
     

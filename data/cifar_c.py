@@ -29,7 +29,7 @@ class CIFAR10C(Dataset):
 		self.transform = transform
 		self._ensure_downloaded()
 
-		# Load exactly the corruption array and the labels
+		#loads exactly the corruption array and the labels
 		# The arrays in CIFAR-10-C usually have shape (50000, 32, 32, 3) (10k images x 5 severities)
 		images_path = self.root / f"{corruption}.npy"
 		labels_path = self.root / "labels.npy"

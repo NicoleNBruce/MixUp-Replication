@@ -39,9 +39,8 @@ def plot_combined_curves(history_paths: dict[str, Path], save_path: Path):
 		if not epochs:
 			continue
 		
-		#plot test loss
+		#plot test loss and accuracy
 		axes[0].plot(epochs, test_loss, label=name)
-		# Plot Test Acc
 		axes[1].plot(epochs, test_acc, label=name)
 		
 	axes[0].set_title("Test Loss")
@@ -87,12 +86,11 @@ def summarize_results(summary_paths: dict[str, Path]):
 def main() -> None:
 	args = parse_args()
 	
-	# Resolve the absolute path to the training script based on this file's location
-	# This ensures it runs correctly even if the current working directory is different (like in Kaggle)
+	#resolving the absolute path to the training script based on this file's location
+	#this ensures it runs correctly even if the current working directory is different 
 	ROOT = Path(__file__).resolve().parents[1]
 	train_script = ROOT / "training" / "train.py"
 	
-	# Keep only baseline and alpha=1.0 per user request
 	experiments = [
 		{"name": f"{args.dataset}_baseline", "alpha": 0.0},
 		{"name": f"{args.dataset}_mixup_alpha_1.0", "alpha": 1.0},
@@ -127,7 +125,7 @@ def main() -> None:
 		history_paths[name] = run_dir / "history.json"
 		summary_paths[name] = run_dir / "summary.json"
 
-	# Generate ablation table and combined curves
+	#generating ablation table and combined curves
 	summarize_results(summary_paths)
 	plot_combined_curves(history_paths, Path(args.save_dir) / "ablation_curves.png")
 

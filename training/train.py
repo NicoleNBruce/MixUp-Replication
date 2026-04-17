@@ -177,7 +177,7 @@ def main() -> None:
 		weight_decay=args.weight_decay,
 		nesterov=True,
 	)
-	# MixUp paper uses step decay: dividing LR by 10 at 50% and 75% of training
+	#mixUp paper uses step decay: dividing LR by 10 at 50% and 75% of training
 	milestones = [int(args.epochs * 0.5), int(args.epochs * 0.75)]
 	scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=milestones, gamma=0.1)
 

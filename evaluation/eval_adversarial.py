@@ -34,11 +34,12 @@ def main():
     source_model = resnet18(num_classes).to(device)
     target_model = resnet18(num_classes).to(device)
     
-    # Load weights
+    #loading weights
     s_ckp = torch.load(args.source, map_location=device, weights_only=False)
     t_ckp = torch.load(args.target, map_location=device, weights_only=False)
     
-    # Remove DataParallel 'module.' prefix if it exists
+#stripping 'module.' prefix from state_dict keys to ensure compatibility 
+#when loading weights trained via nn.DataParallel into a single-GPU model.
     s_state = {k.replace('module.', ''): v for k, v in s_ckp["model_state"].items()}
     t_state = {k.replace('module.', ''): v for k, v in t_ckp["model_state"].items()}
     
@@ -51,7 +52,7 @@ def main():
     criterion = nn.CrossEntropyLoss()
     correct, total = 0, 0
     
-    # Get exact bounds for the dataset to calculate valid normalized min/max per channel
+    #getting exact bounds for the dataset to calculate valid normalized min/max per channel
     db_mean = torch.tensor([0.4914, 0.4822, 0.4465] if args.dataset == "cifar10" else [0.5071, 0.4867, 0.4408], device=device).view(1, 3, 1, 1)
     db_std = torch.tensor([0.2023, 0.1994, 0.2010] if args.dataset == "cifar10" else [0.2675, 0.2565, 0.2761], device=device).view(1, 3, 1, 1)
     lower_bound = (0.0 - db_mean) / db_std
@@ -68,9 +69,9 @@ def main():
             source_model.zero_grad()
             loss.backward()
             
-            # Create FGSM attack
+            #createing FGSM attack
             adv_images = images + args.epsilon * images.grad.data.sign()
-            # Strictly limit the generated perturbation back to real image space!
+            #strictly limiting the generated perturbation back to real image space
             adv_images = torch.max(torch.min(adv_images, upper_bound), lower_bound)
             
         elif args.attack == "ifgsm":
@@ -85,7 +86,7 @@ def main():
                 eta = torch.clamp(adv_images - images, min=-args.epsilon, max=args.epsilon)
                 adv_images = torch.max(torch.min(images + eta, upper_bound), lower_bound).detach().requires_grad_(True)
                 
-        # Evaluate Attack on target model
+        #evaluate attack on model
         with torch.no_grad():
             outputs = target_model(adv_images)
             _, predicted = outputs.max(1)
