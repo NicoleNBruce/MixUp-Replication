@@ -4,19 +4,8 @@ This repository contains the codebase to replicate the findings of the **MixUp: 
 
 *(Note: Due to compute restrictions, not all label corruption and adversarial training experiments could be completed in their entirety, but the code to reproduce them is fully implemented and self-contained here).*
 
-## 📋 Rubric Checklist
 
-This codebase was designed to strictly adhere to the assignment requirements:
-
-- ✅ **Self-contained:** A `requirements.txt` is provided. The code can be run end-to-end in a clean virtual environment or Notebook.
-- ✅ **Reproducible:** All training scripts use fixed seeds natively (`random`, `numpy`, `torch`, `torch.cuda`) and enforce `cudnn.deterministic = True` while disabling `cudnn.benchmark` to guarantee exact replication across identical GPU compute environments.
-- ✅ **Documented:** This README provides complete, copy-pasteable instructions for training, evaluation, and visualization.
-- ✅ **Well-structured:** The codebase is heavily modularized into standard paradigms: `data/`, `models/`, `training/`, and `evaluation/`. Monolithic loops were actively avoided.
-- ✅ **Version controlled:** Managed via Git with an ongoing commit history. (Be sure to check the private GitHub link submitted alongside this code archive).
-
----
-
-## 🛠 Project Structure
+## Project Structure
 
 ```text
 mixup-replication/
@@ -36,7 +25,7 @@ mixup-replication/
 
 ---
 
-## 🚀 1. Setup (Self-contained)
+##  1. Setup (Self-contained)
 
 ```bash
 # Create and activate a clean environment
@@ -53,7 +42,7 @@ pip install -r requirements.txt
 
 ---
 
-## 🏃‍♂️ 2. Training Instructions
+##  2. Training Instructions
 
 All scripts execute from the root directory. To ensure exact reproducibility, use the `--seed` argument. Results (weights, loss/accuracy trace `history.json`) are automatically saved out to `--save-dir` under the specific `--run-name`.
 
@@ -93,7 +82,7 @@ python training/train.py --corrupt-prob 0.20 --mixup-alpha 8.0 --run-name corrup
 
 ---
 
-## 🛡️ 3. Evaluation Instructions (Section 3.5)
+##  3. Evaluation Instructions (Section 3.5)
 
 To evaluate the adversarial robustness of any trained checkpoint against **FGSM** (Fast Gradient Sign Method) or **I-FGSM**, we use `eval_adversarial.py`.
 
@@ -117,7 +106,7 @@ python evaluation/eval_adversarial.py \
 
 ---
 
-## 📊 4. Generating Tables and Figures
+##  4. Generating Tables and Figures
 
 **Label Corruption Graphing**
 If output logs (ex: `corrupted_20/history.json`, `corrupted_20_mixup/history.json`, etc.) populate the outputs directory, you can instantly generate the comparative graph for the report:
